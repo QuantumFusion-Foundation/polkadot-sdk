@@ -50,7 +50,7 @@ sp-tracing = { workspace = true, default-features = true }
 tracing-subscriber = { workspace = true }
 paste = { workspace = true, default-features = true }
 regex = { workspace = true }
-criterion = { workspace = true, default-features = true }
+criterion = { version = "0.5.1", features = ["html_reports"] }
 num_cpus = { workspace = true }
 tempfile = { workspace = true }
 
