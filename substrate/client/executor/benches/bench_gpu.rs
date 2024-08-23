@@ -158,48 +158,48 @@ fn bench_call_instance(c: &mut Criterion) {
 				precompile: false,
 			},
 		),
-		// (
-		// 	"recreate_instance_cow_fresh",
-		// 	Method::Compiled {
-		// 		instantiation_strategy: InstantiationStrategy::RecreateInstanceCopyOnWrite,
-		// 		precompile: false,
-		// 	},
-		// ),
-		// (
-		// 	"recreate_instance_cow_precompiled",
-		// 	Method::Compiled {
-		// 		instantiation_strategy: InstantiationStrategy::RecreateInstanceCopyOnWrite,
-		// 		precompile: true,
-		// 	},
-		// ),
-		// (
-		// 	"pooling_vanilla_fresh",
-		// 	Method::Compiled {
-		// 		instantiation_strategy: InstantiationStrategy::Pooling,
-		// 		precompile: false,
-		// 	},
-		// ),
-		// (
-		// 	"pooling_vanilla_precompiled",
-		// 	Method::Compiled {
-		// 		instantiation_strategy: InstantiationStrategy::Pooling,
-		// 		precompile: true,
-		// 	},
-		// ),
-		// (
-		// 	"pooling_cow_fresh",
-		// 	Method::Compiled {
-		// 		instantiation_strategy: InstantiationStrategy::PoolingCopyOnWrite,
-		// 		precompile: false,
-		// 	},
-		// ),
-		// (
-		// 	"pooling_cow_precompiled",
-		// 	Method::Compiled {
-		// 		instantiation_strategy: InstantiationStrategy::PoolingCopyOnWrite,
-		// 		precompile: true,
-		// 	},
-		// ),
+		(
+			"recreate_instance_cow_fresh",
+			Method::Compiled {
+				instantiation_strategy: InstantiationStrategy::RecreateInstanceCopyOnWrite,
+				precompile: false,
+			},
+		),
+		(
+			"recreate_instance_cow_precompiled",
+			Method::Compiled {
+				instantiation_strategy: InstantiationStrategy::RecreateInstanceCopyOnWrite,
+				precompile: true,
+			},
+		),
+		(
+			"pooling_vanilla_fresh",
+			Method::Compiled {
+				instantiation_strategy: InstantiationStrategy::Pooling,
+				precompile: false,
+			},
+		),
+		(
+			"pooling_vanilla_precompiled",
+			Method::Compiled {
+				instantiation_strategy: InstantiationStrategy::Pooling,
+				precompile: true,
+			},
+		),
+		(
+			"pooling_cow_fresh",
+			Method::Compiled {
+				instantiation_strategy: InstantiationStrategy::PoolingCopyOnWrite,
+				precompile: false,
+			},
+		),
+		(
+			"pooling_cow_precompiled",
+			Method::Compiled {
+				instantiation_strategy: InstantiationStrategy::PoolingCopyOnWrite,
+				precompile: true,
+			},
+		),
 	];
 
 	let runtimes = [("test_runtime", test_runtime())];
@@ -222,11 +222,11 @@ fn bench_call_instance(c: &mut Criterion) {
 
 	let num_cpus = num_cpus::get_physical();
 	let mut tmpdir = None;
-	let mut group: BenchmarkGroup<WallTime> = c.benchmark_group("CPU vs GPU");
 
 	for (strategy_name, strategy) in strategies {
 		for (runtime_name, runtime) in runtimes {
 			let runtime = initialize(&mut tmpdir, runtime, strategy.clone());
+			let mut group: BenchmarkGroup<WallTime> = c.benchmark_group(format!("{strategy_name}_CPU vs GPU"));
 
 			group.bench_function(format!("{strategy_name}_cpu_loop"), |b| {
 				let mut instance = runtime.new_instance().unwrap();
@@ -240,28 +240,14 @@ fn bench_call_instance(c: &mut Criterion) {
 				b.iter(|| testcase(&mut instance));
 			});
 
-			// for (testcase_name, testcase) in testcases {
-			// 	for thread_count in thread_counts {
-			// 		if thread_count > num_cpus {
-			// 			// If there are not enough cores available the benchmark is pointless.
-			// 			continue
-			// 		}
-
-			// 		let benchmark_name = format!(
-			// 			"{}_from_{}_with_{}_on_{}_threads",
-			// 			testcase_name, runtime_name, strategy_name, thread_count
-			// 		);
-			// 		run_benchmark(c, &benchmark_name, thread_count, &*runtime, testcase)
-			// 	}
-			// }
+			group.finish();
 		}
 	}
-	group.finish();
 }
 
 criterion_group! {
-	name = bench_gpu;
+	name = benches_gpu;
 	config = Criterion::default();
 	targets = bench_call_instance
 }
-criterion_main!(bench_gpu);
+criterion_main!(benches_gpu);

@@ -195,26 +195,45 @@ impl Default for UseAFExt {
 #[runtime_interface]
 pub trait Storage {
 	
-	fn add_cpu(a: u32, b: u32) -> u32 {
+	fn bench_cpu() -> u64 {
 		// sum from a to b
-		let mut c = 0;
-		for i in a..b {
-			c += i;
+		let mut s: u64 = 0;
+		// Source array with 1_000_000 capacity
+		let a: Vec<f32> = vec![1.0; 1_000_000];
+		// Empty array for result
+		let mut b: Vec<f32> = Vec::with_capacity(1_000_000);
+		for i in a {
+			// Divide a numbers
+			let d = i / i;
+			// Push result to array
+			b.push(d);
 		}
-		c
+		for i in b {
+			// Sum all results of div
+			s += i as u64;
+		}
+		s
 	}
 	
-	fn add_gpu(a: u32, b: u32) -> u32 {
+	fn bench_gpu() -> u32 {
 		let mut c: u32 = 0;
 		if sp_externalities::with_externalities(|mut e| e.extension::<UseAFExt>().is_some())
 			.unwrap_or_default()
 		{
 			extern crate arrayfire as af;
+			use af::{Seq, Dim4};
+			use af::{print, randu, print_mem_info, get_available_backends, get_device};
 			af::set_backend(af::Backend::OPENCL);
-			use arrayfire::{Dim4, print, randu, sum};
-			let dims = Dim4::new(&[(b - a) as u64, 1, 1, 1]);
-			let aa = randu::<f32>(dims);
-			let bb: arrayfire::Array<f32> = sum(&aa, 0);
+			// Array struct
+			let dim = Dim4::new(&[1_000_000, 1, 1, 1]);
+			// New array filled with float random numbers
+			let seq = randu::<u64>(dim);
+			// New array filled with float random numbers
+			let seq2 = randu::<u64>(dim);
+			// Div two arrays and get new array with result
+			let b = af::div(&seq, &seq2, false);
+			// Sum result array
+			let e = af::sum(&b, 0);
 		};
 		c
 	}

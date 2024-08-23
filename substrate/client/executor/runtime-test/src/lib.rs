@@ -78,12 +78,12 @@ static mut MUTABLE_STATIC_BSS: u64 = 0;
 
 sp_core::wasm_export_functions! {
 	fn test_loop_cpu() {
-        let t = storage::add_cpu(1,500_000);
+        let t = storage::bench_cpu();
         // misc::print_hex(&[t]);
     }
 	
     fn test_loop_gpu() {
-        let t = storage::add_gpu(1, 1_500_000);
+        let t = storage::bench_gpu();
         // misc::print_hex(&[t]);
     }
 
